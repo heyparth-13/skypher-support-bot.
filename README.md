@@ -1,26 +1,46 @@
-# Skypher support chatbot
+# Skyphr AI Support Chatbot
 
-A client support chat widget for Skypher. It answers questions from your own FAQs and company info, and creates support tickets when it can't help.
+An intelligent client support assistant and project discovery interface for **Skyphr** (https://skyphr.com). Built with Next.js 15, Tailwind/Vanilla CSS, and Google Gemini API with real-time token streaming and automated support ticket generation.
 
-Built with Next.js 15 and the Claude API. The API key stays on the server and is never sent to the browser.
+---
 
-## Run it
+## ✨ Features
 
-1. `npm install`
-2. Copy `.env.example` to `.env.local` and paste your `ANTHROPIC_API_KEY`
-3. Open `lib/knowledge.js` and replace every `TODO` with real Skypher information
-4. `npm run dev` and open http://localhost:3000
+- **Google Gemini API**: Fast token-by-token SSE streaming responses with automated model fallbacks.
+- **Skyphr Brand Aesthetics**: Royal Blue (`#3538CD`), styled serif accents, and crisp layout matching [skyphr.com](https://skyphr.com).
+- **Automated Ticket Creation**: Captures client inquiries and logs support tickets with unique IDs and SLA guarantees.
+- **Voice Typing & Audio Speech**: Speech-to-Text input + Text-to-Speech audio response playback.
+- **Responsive on All Devices**: Optimized for mobile phones (`100dvh`, iOS safe areas), tablets, and desktop screens.
+- **Theme Toggle**: Light mode and Dark mode.
 
-## How it works
+---
 
-- `components/ChatWidget.jsx`: the chat bubble and panel
-- `app/api/chat/route.js`: sends the conversation to Claude and runs the `create_ticket` tool
-- `lib/knowledge.js`: everything the bot knows (company info, FAQs, rules)
-- `lib/tickets.js`: validates and saves tickets to `data/tickets.json`, and posts to Slack if `TICKET_WEBHOOK_URL` is set
+## 🚀 Getting Started
 
-## Before going live
+### 1. Install dependencies
+```bash
+npm install
+```
 
-- **Database**: `data/tickets.json` is fine locally. Hosts with a read-only filesystem (like Vercel) need a database. Replace `saveTicket()` in `lib/tickets.js`.
-- **Client login**: right now anyone on the page can chat. Add login before the bot handles any client-specific data.
-- **Rate limit**: the built-in limit is in memory and works for one server only.
-- **Tickets inbox**: tickets are only stored, not shown anywhere yet. Set `TICKET_WEBHOOK_URL` for Slack alerts, or build an admin page.
+### 2. Configure environment variables
+Create a `.env.local` file in the root directory:
+```env
+GOOGLE_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-flash-latest
+```
+
+### 3. Run development server
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📁 Architecture
+
+- `app/api/chat/route.js`: Serverless streaming backend using `@google/generative-ai` with multi-model fallback.
+- `components/ChatPage.jsx`: Interactive full-screen chat interface with audio, category filters, and message tools.
+- `lib/knowledge.js`: Official Skyphr knowledge base and system prompts.
+- `lib/tickets.js`: Ticket validation and storage engine.
