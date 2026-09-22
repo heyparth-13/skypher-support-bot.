@@ -488,49 +488,44 @@ button, textarea, input { font: inherit; }
   border: 2px solid var(--bg-surface);
 }
 
-.skyphr-brand-logo {
+.skyphr-brand-logo-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 2px 4px;
   border-radius: var(--r-md);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   text-align: left;
+  color: var(--text-primary);
 }
 
-.skyphr-brand-logo:hover {
+.skyphr-brand-logo-btn:hover {
   opacity: 0.85;
   transform: translateY(-1px);
 }
 
-.skyphr-logo-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--sky-black);
-  display: grid;
-  place-items: center;
-  color: #FFFFFF;
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: -0.5px;
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
+.skyphr-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-[data-theme="dark"] .skyphr-logo-mark {
-  background: var(--sky-blue);
-}
-
-.skyphr-logo-title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+.skyphr-official-svg {
+  display: block;
   color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.skyphr-symbol-mark {
+  display: block;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.assistant-avatar .skyphr-symbol-mark {
+  color: #FFFFFF;
 }
 
 .skyphr-logo-badge {
