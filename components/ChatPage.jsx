@@ -13,8 +13,8 @@ const SUGGESTIONS = [
   { icon: "⚡", text: "What is included in Skyphr's maintenance and SLA plans?", category: "Support" },
 ];
 
-// Exact Official Skyphr Symbol Mark (from uploaded photo)
-export function SkyphrSymbolMark({ className = "", size = 24 }) {
+// Exact Official Skyphr Symbol Mark (from company logo photo)
+export function SkyphrSymbolMark({ className = "", size = 26 }) {
   return (
     <span
       className={`skyphr-exact-symbol-wrap ${className}`}
@@ -24,18 +24,22 @@ export function SkyphrSymbolMark({ className = "", size = 24 }) {
         src="/skyphr-icon.png"
         alt="Skyphr Icon"
         className="skyphr-icon-img light-icon"
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
       <img
         src="/skyphr-icon-white.png"
         alt="Skyphr Icon"
         className="skyphr-icon-img dark-icon"
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
     </span>
   );
 }
 
-// Complete Exact Official Skyphr Logo Lockup (from uploaded photo)
+// Complete Exact Official Skyphr Logo Lockup (from company logo photo)
 export function SkyphrBrandLogoLockup({ showBadge = true, size = "md" }) {
+  const height = size === "lg" ? 32 : size === "sm" ? 20 : 25;
+
   return (
     <div className={`skyphr-logo-container size-${size}`}>
       <div className="skyphr-exact-logo-wrapper">
@@ -43,11 +47,13 @@ export function SkyphrBrandLogoLockup({ showBadge = true, size = "md" }) {
           src="/skyphr-logo.png"
           alt="Skyphr"
           className="skyphr-exact-logo-img light-logo"
+          style={{ height: height, width: "auto", objectFit: "contain" }}
         />
         <img
           src="/skyphr-logo-white.png"
           alt="Skyphr"
           className="skyphr-exact-logo-img dark-logo"
+          style={{ height: height, width: "auto", objectFit: "contain" }}
         />
       </div>
 
@@ -152,6 +158,7 @@ export default function ChatPage() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSidebarSearch, setShowSidebarSearch] = useState(false);
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -276,9 +283,10 @@ export default function ChatPage() {
     setStreamText("");
     setCurrentSessionId(null);
     setSpeakingIndex(null);
-    if (window.innerWidth <= 768) {
-      setIsSidebarOpen(false);
-    }
+    setIsSidebarOpen(false);
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 100);
   };
 
   const loadSession = (session) => {
@@ -291,9 +299,10 @@ export default function ChatPage() {
     setError("");
     setStreamText("");
     setSpeakingIndex(null);
-    if (window.innerWidth <= 768) {
-      setIsSidebarOpen(false);
-    }
+    setIsSidebarOpen(false);
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 100);
   };
 
   const deleteSession = (e, sessionId) => {
@@ -455,35 +464,44 @@ export default function ChatPage() {
       )}
 
       {/* ══════════════════════════════════════
-          CHAT HISTORY SIDEBAR
+          CHATGPT-STYLE SKYPHR SIDEBAR
       ══════════════════════════════════════ */}
-      <aside className={`history-sidebar ${isSidebarOpen ? "open" : ""}`}>
+      <aside className={`history-sidebar chatgpt-sidebar ${isSidebarOpen ? "open" : ""}`}>
+        {/* Sidebar Header: Brand + Header Actions */}
         <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <SkyphrSymbolMark size={22} />
-            <span className="sidebar-title">Chat History</span>
+          <div className="sidebar-brand" onClick={newChat} style={{ cursor: "pointer" }} title="Skyphr">
+            <SkyphrBrandLogoLockup showBadge={false} size="sm" />
           </div>
-          <button
-            className="sidebar-close-btn"
-            onClick={() => setIsSidebarOpen(false)}
-            title="Close sidebar"
-            aria-label="Close sidebar"
-          >
-            ✕
-          </button>
+          <div className="sidebar-header-actions">
+            <button
+              className={`sidebar-icon-btn ${showSidebarSearch ? "active" : ""}`}
+              onClick={() => setShowSidebarSearch((prev) => !prev)}
+              title="Search chats"
+              aria-label="Search chats"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+            <button
+              className="sidebar-icon-btn"
+              onClick={() => setIsSidebarOpen(false)}
+              title="Close sidebar"
+              aria-label="Close sidebar"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* New Chat Primary Action */}
-        <button className="sidebar-new-chat-btn" onClick={newChat}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Chat
-        </button>
-
-        {/* Search Past Chats */}
-        {sessions.length > 0 && (
+        {/* Expandable Search Input */}
+        {showSidebarSearch && (
           <div className="sidebar-search">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
@@ -494,71 +512,118 @@ export default function ChatPage() {
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
             />
+            {searchQuery && (
+              <button
+                className="search-clear-btn"
+                onClick={() => setSearchQuery("")}
+                type="button"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
         )}
 
-        {/* Sessions List */}
-        <div className="sessions-list">
-          {sessions.length === 0 ? (
-            <div className="empty-history">
-              <div className="empty-history-icon">💬</div>
-              <p>No chat history yet.</p>
-              <span>Your conversations with Skyphr AI will appear here automatically.</span>
-            </div>
-          ) : filteredSessions.length === 0 ? (
-            <div className="empty-history">
-              <p>No matching chats found.</p>
-            </div>
-          ) : (
-            filteredSessions.map((s) => {
-              const isActive = currentSessionId === s.id;
-              const dateStr = new Date(s.updatedAt || s.createdAt).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              });
+        {/* Scrollable Navigation Body */}
+        <div className="sidebar-scroll-body">
+          {/* Top Primary Actions */}
+          <div className="sidebar-nav-group">
+            <button
+              className={`sidebar-nav-item primary ${messages.length === 0 && !currentSessionId ? "active" : ""}`}
+              onClick={newChat}
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              <span>New chat</span>
+            </button>
 
-              return (
-                <div
-                  key={s.id}
-                  className={`session-item ${isActive ? "active" : ""}`}
-                  onClick={() => loadSession(s)}
-                >
-                  <div className="session-item-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div className="session-item-info">
-                    <span className="session-item-title">{s.title}</span>
-                    <span className="session-item-date">{dateStr} · {s.messages?.length || 0} messages</span>
-                  </div>
-                  <button
-                    className="session-delete-btn"
-                    onClick={(e) => deleteSession(e, s.id)}
-                    title="Delete conversation"
-                    aria-label="Delete conversation"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
+            <button
+              className="sidebar-nav-item"
+              onClick={() => {
+                send("Browse Skyphr's full AI capability library and services documentation.");
+                setIsSidebarOpen(false);
+              }}
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <span>Library</span>
+            </button>
+
+            <button
+              className="sidebar-nav-item"
+              onClick={() => {
+                send("Show me Skyphr's active client project portfolio and SaaS case studies.");
+                setIsSidebarOpen(false);
+              }}
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Projects</span>
+            </button>
+          </div>
+
+          {/* Recents Section */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">Recents</div>
+            <div className="sidebar-section-list">
+              {sessions.length === 0 ? (
+                <div className="empty-history-compact">
+                  <span>No recent chats</span>
                 </div>
-              );
-            })
-          )}
+              ) : filteredSessions.length === 0 ? (
+                <div className="empty-history-compact">
+                  <span>No matching chats</span>
+                </div>
+              ) : (
+                filteredSessions.map((s) => {
+                  const isActive = currentSessionId === s.id;
+                  return (
+                    <div
+                      key={s.id}
+                      className={`session-item-chatgpt ${isActive ? "active" : ""}`}
+                      onClick={() => loadSession(s)}
+                    >
+                      <span className="session-item-chatgpt-title">{s.title}</span>
+                      <button
+                        className="session-item-chatgpt-delete"
+                        onClick={(e) => deleteSession(e, s.id)}
+                        title="Delete chat"
+                        aria-label="Delete chat"
+                        type="button"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar Footer */}
         {sessions.length > 0 && (
-          <div className="sidebar-footer">
-            <button className="clear-history-btn" onClick={clearAllHistory}>
+          <div className="sidebar-footer-chatgpt">
+            <button className="clear-history-btn-chatgpt" onClick={clearAllHistory} type="button">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
               </svg>
-              Clear All History
+              <span>Clear history</span>
             </button>
           </div>
         )}

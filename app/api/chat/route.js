@@ -6,10 +6,10 @@ export const runtime = "nodejs";
 
 const CANDIDATE_MODELS = [
   process.env.GEMINI_MODEL,
-  "gemini-flash-latest",
   "gemini-3.6-flash",
   "gemini-3.5-flash-lite",
   "gemini-3.5-flash",
+  "gemini-flash-latest",
 ].filter(Boolean);
 
 const MAX_HISTORY = 20;
