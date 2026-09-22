@@ -78,22 +78,27 @@ function sseChunk(controller, payload) {
   controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
 }
 
-// Fallback response generator if cloud API has transient network outage
+// Fallback response generator aligning with Project Consultant persona
 function generateFallbackResponse(userPrompt) {
   const lower = userPrompt.toLowerCase();
-  if (lower.includes("service") || lower.includes("what do you do") || lower.includes("build")) {
-    return `**Skyphr** specializes in:\n- **AI Systems & Automation** (Custom LLM integrations, agents, RAG)\n- **SaaS Platform Development** (Full-stack web apps in Next.js, React, Node, Python)\n- **UI/UX Design & Prototyping** (High-converting Figma design systems)\n- **Mobile Development** (iOS & Android with React Native / Flutter)\n- **Dedicated Engineering Teams** for scaling digital products.\n\nWould you like to schedule a discovery call or discuss a project?`;
+
+  if (lower.includes("code") || lower.includes("script") || lower.includes("python") || lower.includes("javascript")) {
+    return `I can help you plan, estimate, and architect your project, but this assistant does not provide raw source code.\n\n### Project Planning Overview\n- **Frontend**: React / Next.js with TailwindCSS\n- **Backend**: Python (FastAPI) or Node.js\n- **Database**: PostgreSQL / Supabase\n- **AI Engine**: Gemini or OpenAI APIs with RAG\n- **Estimated Timeline**: 2–4 weeks for an MVP\n- **Estimated Budget**: ₹25,000 – ₹60,000\n\nWould you like to discuss the specific architecture or schedule a discovery call with a Skyphr engineer?`;
   }
+
+  if (lower.includes("cost") || lower.includes("budget") || lower.includes("price") || lower.includes("rate")) {
+    return `### Estimated Project Budget\n\n| Project Level | Scope & Deliverables | Estimated Cost |\n| :--- | :--- | :--- |\n| **Basic MVP** | Core feature set, clean UI, basic auth & essential database | ₹15,000 – ₹35,000 |\n| **Standard Version** | Full feature set, polished UI/UX, third-party APIs & admin panel | ₹35,000 – ₹85,000 |\n| **Advanced / Enterprise** | AI integrations, custom models/RAG, high scalability, 24/7 SLA | ₹85,000 – ₹2,00,000+ |\n\n*Note: Final pricing depends on custom specifications and third-party API/hosting usage.*`;
+  }
+
+  if (lower.includes("service") || lower.includes("what do you do") || lower.includes("build")) {
+    return `**Skyphr** specializes in:\n- **AI Systems & Automation** (Custom LLM integrations, agents, RAG)\n- **SaaS Platform Development** (Full-stack web apps in Next.js, React, Node, Python)\n- **UI/UX Design & Prototyping** (High-converting Figma design systems)\n- **Mobile Development** (iOS & Android with React Native / Flutter)\n- **Dedicated Engineering Teams** for scaling digital products.\n\nWould you like to schedule a 30-minute discovery call or discuss a project scope?`;
+  }
+
   if (lower.includes("bug") || lower.includes("issue") || lower.includes("error") || lower.includes("help") || lower.includes("ticket")) {
     return `I can help you report an issue to our engineering team immediately. Please provide:\n1. **Your Full Name**\n2. **Your Work Email**\n3. **Description of the issue or error**\n\nOnce you share these, I'll generate a support ticket and our team will respond within 4 hours!`;
   }
-  if (lower.includes("call") || lower.includes("book") || lower.includes("contact") || lower.includes("hire") || lower.includes("quote")) {
-    return `We'd love to collaborate on your product! You can book a free 30-minute discovery call or provide your **Name**, **Email**, and **Project Vision** here, and we'll prepare a custom timeline and proposal for you.`;
-  }
-  if (lower.includes("hours") || lower.includes("time")) {
-    return `Skyphr's core support hours are **${COMPANY.supportHours}**. Enterprise clients have 24/7 on-call engineering access.`;
-  }
-  return `Hello! Welcome to **Skyphr**. We build scalable digital products, SaaS platforms, and AI systems.\n\nHow can I help you today? Feel free to ask about our services, technical capabilities, or request a consultation!`;
+
+  return `Hello! I am **Skyphr's AI Project Consultant**.\n\nI can assist you with:\n- **Project Architecture & Tech Stacks** (React, Next.js, Python, AI APIs)\n- **Feature Planning & System Workflows**\n- **Timeline & Budget Estimation** (in ₹ INR / $ USD)\n- **Booking Discovery Calls with Skyphr Engineers**\n\nWhat kind of software, SaaS, or AI project are you planning to build?`;
 }
 
 export async function POST(request) {
