@@ -13,11 +13,9 @@ const SUGGESTIONS = [
   { icon: "⚡", text: "What is included in Skyphr's maintenance and SLA plans?", category: "Support" },
 ];
 
-// Rich Markdown Renderer: handles bold, code blocks, lists, and links
 function FormattedMessage({ text }) {
   if (!text) return null;
 
-  // Split by code blocks first
   const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
@@ -55,7 +53,6 @@ function FormattedMessage({ text }) {
           );
         }
 
-        // Process lines for bullet lists, bold, and paragraphs
         const lines = part.content.split("\n");
         return (
           <div key={pIdx} className="text-section">
@@ -63,7 +60,6 @@ function FormattedMessage({ text }) {
               const isBullet = line.trim().startsWith("- ") || line.trim().startsWith("* ");
               const cleanLine = isBullet ? line.trim().slice(2) : line;
 
-              // Parse **bold**
               const renderedLine = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((chunk, cIdx) =>
                 chunk.startsWith("**") && chunk.endsWith("**") ? (
                   <strong key={cIdx}>{chunk.slice(2, -2)}</strong>
@@ -106,9 +102,40 @@ export default function ChatPage() {
   const [isListening, setIsListening] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(null);
 
+  // Chat History Management
+  const [sessions, setSessions] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  // Load chat history from localStorage on initial render
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("skyphr_chat_sessions");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setSessions(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load chat history:", e);
+    }
+  }, []);
+
+  // Save sessions to localStorage whenever sessions state changes
+  const saveSessions = (updatedSessions) => {
+    setSessions(updatedSessions);
+    try {
+      localStorage.setItem("skyphr_chat_sessions", JSON.stringify(updatedSessions));
+    } catch (e) {
+      console.warn("Failed to save chat sessions:", e);
+    }
+  };
 
   // Sync theme
   useEffect(() => {
@@ -179,7 +206,6 @@ export default function ChatPage() {
     }
 
     window.speechSynthesis.cancel();
-    // Clean text of markdown
     const clean = text.replace(/[*_`#]/g, "");
     const utterance = new SpeechSynthesisUtterance(clean);
     utterance.rate = 1.0;
@@ -196,16 +222,76 @@ export default function ChatPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  // Start a new chat conversation
+  const newChat = () => {
+    if (speakingIndex !== null && typeof window !== "undefined") {
+      window.speechSynthesis.cancel();
+    }
+    setMessages([]);
+    setInput("");
+    setError("");
+    setStreamText("");
+    setCurrentSessionId(null);
+    setSpeakingIndex(null);
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  // Load an existing conversation from history
+  const loadSession = (session) => {
+    if (speakingIndex !== null && typeof window !== "undefined") {
+      window.speechSynthesis.cancel();
+    }
+    setCurrentSessionId(session.id);
+    setMessages(session.messages || []);
+    setInput("");
+    setError("");
+    setStreamText("");
+    setSpeakingIndex(null);
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  // Delete an individual chat session
+  const deleteSession = (e, sessionId) => {
+    e.stopPropagation();
+    const updated = sessions.filter((s) => s.id !== sessionId);
+    saveSessions(updated);
+    if (currentSessionId === sessionId) {
+      newChat();
+    }
+  };
+
+  // Clear all conversation history
+  const clearAllHistory = () => {
+    if (window.confirm("Are you sure you want to clear all chat history?")) {
+      saveSessions([]);
+      newChat();
+    }
+  };
+
   async function send(text) {
     const content = (text ?? input).trim();
     if (!content || loading) return;
 
-    const next = [...messages, { role: "user", content }];
+    const userTurn = { role: "user", content };
+    const next = [...messages, userTurn];
     setMessages(next);
     setInput("");
     setError("");
     setLoading(true);
     setStreamText("");
+
+    // Create session ID if it's the start of a conversation
+    let activeId = currentSessionId;
+    let currentTitle = "";
+    if (!activeId) {
+      activeId = "session_" + Date.now();
+      setCurrentSessionId(activeId);
+      currentTitle = content.length > 36 ? content.slice(0, 36) + "…" : content;
+    }
 
     try {
       const res = await fetch("/api/chat", {
@@ -251,10 +337,32 @@ export default function ChatPage() {
         }
       }
 
-      setMessages([
+      const finalMessages = [
         ...next,
         { role: "assistant", content: accumulated, ticket: foundTicket },
-      ]);
+      ];
+      setMessages(finalMessages);
+
+      // Save to chat history
+      const existingIdx = sessions.findIndex((s) => s.id === activeId);
+      let updatedSessions = [...sessions];
+      if (existingIdx >= 0) {
+        updatedSessions[existingIdx] = {
+          ...updatedSessions[existingIdx],
+          messages: finalMessages,
+          updatedAt: Date.now(),
+        };
+      } else {
+        const newSessionObj = {
+          id: activeId,
+          title: currentTitle || "New Conversation",
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          messages: finalMessages,
+        };
+        updatedSessions = [newSessionObj, ...updatedSessions];
+      }
+      saveSessions(updatedSessions);
     } catch (err) {
       setError(err.message || "Connection interrupted. Please try again.");
     } finally {
@@ -269,17 +377,6 @@ export default function ChatPage() {
       e.preventDefault();
       send();
     }
-  }
-
-  function newChat() {
-    if (speakingIndex !== null && typeof window !== "undefined") {
-      window.speechSynthesis.cancel();
-    }
-    setMessages([]);
-    setInput("");
-    setError("");
-    setStreamText("");
-    setSpeakingIndex(null);
   }
 
   const exportChat = () => {
@@ -302,26 +399,169 @@ export default function ChatPage() {
     ? SUGGESTIONS
     : SUGGESTIONS.filter((s) => s.category === selectedCategory);
 
+  const filteredSessions = sessions.filter((s) =>
+    s.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <>
+    <div className={`app-layout-wrapper ${isSidebarOpen ? "sidebar-expanded" : ""}`}>
       <div className="skyphr-background" />
       <div className="skyphr-grid-overlay" />
 
+      {/* History Sidebar Backdrop on Mobile */}
+      {isSidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* ══════════════════════════════════════
+          CHAT HISTORY SIDEBAR
+      ══════════════════════════════════════ */}
+      <aside className={`history-sidebar ${isSidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            <div className="skyphr-logo-mark">S</div>
+            <span className="sidebar-title">Chat History</span>
+          </div>
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            title="Close sidebar"
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* New Chat Primary Action in Sidebar */}
+        <button className="sidebar-new-chat-btn" onClick={newChat}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Chat
+        </button>
+
+        {/* Search Past Chats */}
+        {sessions.length > 0 && (
+          <div className="sidebar-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Sessions List */}
+        <div className="sessions-list">
+          {sessions.length === 0 ? (
+            <div className="empty-history">
+              <div className="empty-history-icon">💬</div>
+              <p>No chat history yet.</p>
+              <span>Your conversations with Skyphr AI will appear here automatically.</span>
+            </div>
+          ) : filteredSessions.length === 0 ? (
+            <div className="empty-history">
+              <p>No matching chats found.</p>
+            </div>
+          ) : (
+            filteredSessions.map((s) => {
+              const isActive = currentSessionId === s.id;
+              const dateStr = new Date(s.updatedAt || s.createdAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              });
+
+              return (
+                <div
+                  key={s.id}
+                  className={`session-item ${isActive ? "active" : ""}`}
+                  onClick={() => loadSession(s)}
+                >
+                  <div className="session-item-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                  <div className="session-item-info">
+                    <span className="session-item-title">{s.title}</span>
+                    <span className="session-item-date">{dateStr} · {s.messages?.length || 0} messages</span>
+                  </div>
+                  <button
+                    className="session-delete-btn"
+                    onClick={(e) => deleteSession(e, s.id)}
+                    title="Delete conversation"
+                    aria-label="Delete conversation"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Sidebar Footer */}
+        {sessions.length > 0 && (
+          <div className="sidebar-footer">
+            <button className="clear-history-btn" onClick={clearAllHistory}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Clear All History
+            </button>
+          </div>
+        )}
+      </aside>
+
+      {/* ══════════════════════════════════════
+          MAIN CHAT CONTAINER
+      ══════════════════════════════════════ */}
       <div className="chat-root">
         {/* Skyphr Official Navigation Header */}
         <header className="skyphr-header">
-          <button
-            className="skyphr-brand-logo"
-            onClick={newChat}
-            title="Start new chat"
-            aria-label="Skyphr - Start new chat"
-          >
-            <div className="skyphr-logo-mark">S</div>
-            <span className="skyphr-logo-title">Skyphr</span>
-            <span className="skyphr-logo-badge">AI Support</span>
-          </button>
+          <div className="header-left-group">
+            {/* Sidebar Toggle Button */}
+            <button
+              className="history-toggle-btn"
+              onClick={() => setIsSidebarOpen((prev) => !prev)}
+              title="Chat History"
+              aria-label="Toggle chat history"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+              {sessions.length > 0 && <span className="history-badge">{sessions.length}</span>}
+            </button>
 
-          {/* Navigation Bar (matching skyphr.com) */}
+            {/* Clickable Brand Logo */}
+            <button
+              className="skyphr-brand-logo"
+              onClick={newChat}
+              title="Start new chat"
+              aria-label="Skyphr - Start new chat"
+            >
+              <div className="skyphr-logo-mark">S</div>
+              <span className="skyphr-logo-title">Skyphr</span>
+              <span className="skyphr-logo-badge">AI Support</span>
+            </button>
+          </div>
+
+          {/* Navigation Bar */}
           <nav className="skyphr-nav">
             <button className="nav-pill active" onClick={() => send("Tell me about Skyphr and your core capabilities.")}>
               Home
@@ -646,6 +886,6 @@ export default function ChatPage() {
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
