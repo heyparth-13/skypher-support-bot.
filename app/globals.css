@@ -512,20 +512,60 @@ button, textarea, input { font: inherit; }
   gap: 8px;
 }
 
-.skyphr-official-svg {
-  display: block;
-  color: var(--text-primary);
-  transition: color 0.3s ease;
+.skyphr-exact-logo-wrapper {
+  display: flex;
+  align-items: center;
 }
 
-.skyphr-symbol-mark {
+.skyphr-exact-logo-img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
   display: block;
-  color: var(--text-primary);
-  transition: color 0.3s ease;
 }
 
-.assistant-avatar .skyphr-symbol-mark {
-  color: #FFFFFF;
+.skyphr-exact-symbol-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.skyphr-icon-img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Light / Dark Mode Visibility Switching */
+.dark-logo, .dark-icon {
+  display: none !important;
+}
+
+.light-logo, .light-icon {
+  display: block !important;
+}
+
+[data-theme="dark"] .dark-logo,
+[data-theme="dark"] .dark-icon {
+  display: block !important;
+}
+
+[data-theme="dark"] .light-logo,
+[data-theme="dark"] .light-icon {
+  display: none !important;
+}
+
+/* Assistant Avatar image specific */
+.assistant-avatar .skyphr-exact-symbol-wrap {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.assistant-avatar .skyphr-icon-img {
+  filter: brightness(0) invert(1);
 }
 
 .skyphr-logo-badge {

@@ -13,66 +13,42 @@ const SUGGESTIONS = [
   { icon: "⚡", text: "What is included in Skyphr's maintenance and SLA plans?", category: "Support" },
 ];
 
-// Official Skyphr Vector Icon Mark (matching skyphr.com)
-export function SkyphrSymbolMark({ className = "", size = 26 }) {
+// Exact Official Skyphr Symbol Mark (from uploaded photo)
+export function SkyphrSymbolMark({ className = "", size = 24 }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`skyphr-symbol-mark ${className}`}
+    <span
+      className={`skyphr-exact-symbol-wrap ${className}`}
+      style={{ width: size, height: size }}
     >
-      {/* Upper swoosh & arrowhead */}
-      <path
-        d="M26.2 3.8C20.5 0.5 13.6 1.8 9.4 6.2C6.1 9.6 4.8 14.1 6.1 18.6L16.4 12.8L11.5 8.9C13.8 6.4 17.5 5.5 20.8 6.8C24.4 8.2 26.5 11.8 25.8 15.6C25.2 19.1 22.4 21.6 18.9 22.4L13.8 23.6C9.1 24.7 5.5 28.6 5.1 33.4C4.6 38.6 8.2 43.1 13.4 44.5C18.8 45.9 24.8 44.1 28.5 39.8L21.2 34.6C19.2 36.6 16.2 37.4 13.5 36.4C11.2 35.6 9.8 33.4 10.1 31.1C10.4 28.9 12.2 27.2 14.4 26.7L19.8 25.4C25.4 24.1 29.8 19.5 30.2 13.6C30.6 9.6 29.1 6.1 26.2 3.8Z"
-        fill="currentColor"
-        transform="scale(0.68) translate(4, 3)"
+      <img
+        src="/skyphr-icon.png"
+        alt="Skyphr Icon"
+        className="skyphr-icon-img light-icon"
       />
-      {/* Inner sharp dynamic arrow pointer */}
-      <path
-        d="M10.2 11.2L20.8 16.5L10.2 21.8L13.4 16.5L10.2 11.2Z"
-        fill="currentColor"
+      <img
+        src="/skyphr-icon-white.png"
+        alt="Skyphr Icon"
+        className="skyphr-icon-img dark-icon"
       />
-    </svg>
+    </span>
   );
 }
 
-// Complete Official Skyphr Logo Lockup (Icon + Typography)
+// Complete Exact Official Skyphr Logo Lockup (from uploaded photo)
 export function SkyphrBrandLogoLockup({ showBadge = true, size = "md" }) {
   return (
     <div className={`skyphr-logo-container size-${size}`}>
-      <div className="skyphr-logo-svg-wrapper">
-        <svg
-          height={size === "sm" ? 24 : size === "lg" ? 34 : 28}
-          viewBox="0 0 152 38"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="skyphr-official-svg"
-        >
-          {/* Stylized S Arrow Icon */}
-          <g className="logo-mark-g" fill="currentColor">
-            {/* S-curve upper ribbon */}
-            <path d="M22.8 3.5C16.8 0.8 9.8 2.2 5.5 7.1C1.8 11.2 0.8 16.8 3.0 21.8L12.5 16.2L7.8 11.8C10.5 8.8 14.8 7.8 18.5 9.4C22.2 11.0 24.5 14.8 23.8 18.8C23.2 22.4 20.2 25.1 16.5 25.9L11.2 27.1C6.2 28.2 2.5 32.5 2.1 37.6C1.6 43.1 5.5 48.0 11.0 49.5C16.8 51.0 23.1 49.0 27.1 44.5L19.4 39.0C17.2 41.2 14.0 42.0 11.1 41.0C8.6 40.1 7.1 37.8 7.4 35.2C7.8 32.8 9.8 31.0 12.2 30.5L17.8 29.1C23.8 27.8 28.5 22.8 28.8 16.5C29.2 12.2 27.6 8.5 24.5 6.0L22.8 3.5Z" transform="scale(0.62) translate(2, 2)" />
-            {/* Center Dynamic Arrow */}
-            <path d="M7.8 12.8L17.5 18.2L7.8 23.6L10.8 18.2L7.8 12.8Z" />
-          </g>
-
-          {/* 'kyphr' Custom Geometric Wordmark */}
-          <g className="logo-text-g" fill="currentColor">
-            {/* k */}
-            <path d="M38 5.5H43.2V19.8L51.8 10.5H58.2L48.5 20.5L59 33.5H52.4L44.2 23.2L43.2 24.2V33.5H38V5.5Z" />
-            {/* y */}
-            <path d="M60.5 10.5H65.8L71.2 26.2L76.5 10.5H81.8L73.2 33.8C71.8 37.5 69.2 39.5 65.2 39.5H61.8V35.2H64.5C66.8 35.2 68.0 34.2 68.8 32.2L69.5 30.2L60.5 10.5Z" />
-            {/* p */}
-            <path d="M84.5 10.5H89.5V13.8C91.2 11.5 94.2 10.2 97.8 10.2C104.5 10.2 109.5 15.5 109.5 22.2C109.5 29.0 104.5 34.2 97.8 34.2C94.2 34.2 91.2 32.8 89.5 30.5V41H84.5V10.5ZM97.0 15.0C92.5 15.0 89.5 18.5 89.5 22.2C89.5 26.0 92.5 29.5 97.0 29.5C101.5 29.5 104.5 26.0 104.5 22.2C104.5 18.5 101.5 15.0 97.0 15.0Z" />
-            {/* h */}
-            <path d="M113.5 5.5H118.5V14.2C120.2 11.8 123.2 10.2 127.2 10.2C133.5 10.2 137.5 14.5 137.5 21.0V33.5H132.5V21.5C132.5 17.5 130.0 14.8 125.8 14.8C121.5 14.8 118.5 17.8 118.5 22.2V33.5H113.5V5.5Z" />
-            {/* r */}
-            <path d="M141.5 10.5H146.2V15.2C147.8 12.0 150.8 10.5 154.5 10.5V15.5C153.8 15.4 153.0 15.2 152.0 15.2C147.8 15.2 146.2 18.5 146.2 23.2V33.5H141.5V10.5Z" />
-          </g>
-        </svg>
+      <div className="skyphr-exact-logo-wrapper">
+        <img
+          src="/skyphr-logo.png"
+          alt="Skyphr"
+          className="skyphr-exact-logo-img light-logo"
+        />
+        <img
+          src="/skyphr-logo-white.png"
+          alt="Skyphr"
+          className="skyphr-exact-logo-img dark-logo"
+        />
       </div>
 
       {showBadge && (
